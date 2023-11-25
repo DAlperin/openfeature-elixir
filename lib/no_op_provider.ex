@@ -1,4 +1,4 @@
-defmodule NoOpProvider do
+defmodule OpenfeatureElixir.Providers.NoOpProvider do
   def init(_) do
     IO.puts("NoOpProvider init")
     :ok

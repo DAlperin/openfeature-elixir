@@ -1,4 +1,4 @@
-defmodule ClientGenServer do
+defmodule OpenfeatureElixir.ClientGenServer do
   use GenServer
   alias OpenfeatureElixir.{Config}
 
@@ -62,7 +62,7 @@ defmodule ClientGenServer do
   end
 
   @impl true
-  def handle_call({:get_boolean_value, name, default}, _from, state) do
+  def handle_call({:get_boolean_value, name, default}, _from, state) when is_boolean(default) do
     case Map.get(state, :clients)[:default] do
       {provider, _, pid} ->
         {:reply, provider.get_boolean_value(pid, name, default), state}
