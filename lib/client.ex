@@ -1,27 +1,28 @@
 defmodule OpenfeatureElixir.Client do
   alias OpenfeatureElixir.{ClientGenServer}
+  defstruct [:pid]
 
-  def init_client() do
-    ClientGenServer.start_link(%OpenfeatureElixir.Config{})
+  def new() do
+    new(nil)
   end
 
-  def init_client(name) do
-    ClientGenServer.start_link(%OpenfeatureElixir.Config{name: name})
+  def new(name) do
+    {:ok, pid} = ClientGenServer.start_link(%OpenfeatureElixir.Config{name: name})
+
+    %OpenfeatureElixir.Client{pid: pid}
   end
 
-  def set_provider(provider, args) do
-    set_provider(ClientGenServer, provider, args)
+  def set_provider(%OpenfeatureElixir.Client{} = client, provider, args) do
+    GenServer.call(client.pid, {:set_provider, provider, args})
+    client
   end
 
-  def get_boolean_value(name, default) when is_boolean(default) do
-    get_boolean_value(ClientGenServer, name, default)
+  def get_boolean_value(%OpenfeatureElixir.Client{} = client, name, default)
+      when is_boolean(default) do
+    GenServer.call(client.pid, {:get_boolean_value, name, default})
   end
 
-  def set_provider(pid, provider, args) do
-    GenServer.call(pid, {:set_provider, provider, args})
-  end
-
-  def get_boolean_value(pid, name, default) when is_boolean(default) do
-    GenServer.call(pid, {:get_boolean_value, name, default})
+  def shutdown(%OpenfeatureElixir.Client{} = client) do
+    GenServer.stop(client.pid)
   end
 end

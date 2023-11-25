@@ -3,7 +3,7 @@ defmodule OpenfeatureElixirTest do
   doctest OpenfeatureElixir
 
   test "launchdarkly provider" do
-    {:ok, pid} = OpenfeatureElixir.Client.init_client()
+    {:ok, pid} = OpenfeatureElixir.init()
 
     # Configure the provider
     ldProviderConfig =
@@ -12,15 +12,18 @@ defmodule OpenfeatureElixirTest do
         System.get_env("LD_SDK_KEY")
       )
 
-    # Set the default provider
-    OpenfeatureElixir.Client.set_provider(
+    OpenfeatureElixir.set_provider(
       OpenfeatureElixir.Providers.LaunchdarklyProvider,
       ldProviderConfig
     )
 
-    # This test is specific to my account right now, fight me :)
-    assert OpenfeatureElixir.Client.get_boolean_value("test-flag-for-demo", false) == true
+    # Create a client using the default provider
+    client = OpenfeatureElixir.Client.new()
 
-    GenServer.stop(pid, :normal)
+    assert OpenfeatureElixir.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
+
+    OpenfeatureElixir.Client.shutdown(client)
+
+    OpenfeatureElixir.shutdown()
   end
 end
