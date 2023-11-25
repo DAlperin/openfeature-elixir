@@ -11,8 +11,11 @@ defmodule OpenfeatureElixir do
     GenServer.call(OpenfeatureElixir.OpenfeatureManager, {:set_default_provider, provider, args})
   end
 
-  @spec shutdown() :: :ok
   def shutdown() do
     GenServer.stop(OpenfeatureElixir.OpenfeatureManager)
+  end
+
+  def set_global_context(context) do
+    GenServer.call(OpenfeatureElixir.OpenfeatureManager, {:set_global_context, context})
   end
 end

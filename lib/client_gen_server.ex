@@ -23,12 +23,101 @@ defmodule OpenfeatureElixir.ClientGenServer do
     {:ok, %{}}
   end
 
+  def rollup_context(%OpenfeatureElixir.Config{global_context: nil, local_context: nil}) do
+    OpenfeatureElixir.Context.new_targetless_context(%{})
+  end
+
+  def rollup_context(%OpenfeatureElixir.Config{global_context: nil, local_context: _}) do
+    OpenfeatureElixir.Context.new_targetless_context(%{})
+  end
+
+  def rollup_context(%OpenfeatureElixir.Config{global_context: _, local_context: nil}) do
+    OpenfeatureElixir.Context.new_targetless_context(%{})
+  end
+
+  def rollup_context(nil, nil) do
+    OpenfeatureElixir.Context.new_targetless_context(%{})
+  end
+
+  def rollup_context(nil, second) do
+    second
+  end
+
+  def rollup_context(first, nil) do
+    first
+  end
+
+  def rollup_context(%OpenfeatureElixir.Context{} = first, %OpenfeatureElixir.Context{} = second) do
+    if is_nil(first.key) && is_nil(second.key) do
+      OpenfeatureElixir.Context.new_targetless_context(Map.merge(first.body, second.body))
+    else
+      OpenfeatureElixir.Context.new_targeted_context(
+        first.key || second.key,
+        Map.merge(first.body, second.body)
+      )
+    end
+  end
+
+  def rollup_context(first, nil, nil) do
+    first
+  end
+
+  def rollup_context(nil, second, nil) do
+    second
+  end
+
+  def rollup_context(nil, nil, third) do
+    third
+  end
+
+  def rollup_context(first, second, nil) do
+    rollup_context(first, second)
+  end
+
+  def rollup_context(first, nil, third) do
+    rollup_context(first, third)
+  end
+
+  def rollup_context(nil, second, third) do
+    rollup_context(second, third)
+  end
+
+  def rollup_context(
+        %OpenfeatureElixir.Context{} = first,
+        %OpenfeatureElixir.Context{} = second,
+        %OpenfeatureElixir.Context{} = third
+      ) do
+    rollup_context(first, second) |> rollup_context(third)
+  end
+
+  def get_bool(state, name, default, context) do
+    context = rollup_context(state.global_context, state.local_context, context)
+
+    case Map.get(state, :provider) do
+      {provider, _, pid} ->
+        {:reply, provider.get_boolean_value(pid, name, default, context), state}
+
+      _ ->
+        {:reply, default, state}
+    end
+  end
+
   @impl true
   def init(%Config{} = args) do
     {:ok, provider} =
       GenServer.call(OpenfeatureElixir.OpenfeatureManager, {:get_default_provider})
 
-    {:ok, Map.put(args, :provider, provider)}
+    {:ok, global_context} =
+      GenServer.call(OpenfeatureElixir.OpenfeatureManager, {:get_global_context})
+
+    args =
+      Map.merge(args, %{
+        provider: provider,
+        global_context: global_context,
+        local_context: nil
+      })
+
+    {:ok, args}
   end
 
   @impl true
@@ -39,10 +128,22 @@ defmodule OpenfeatureElixir.ClientGenServer do
   end
 
   @impl true
-  def handle_call({:get_boolean_value, name, default}, _from, state) when is_boolean(default) do
+  def handle_call({:get_boolean_value, name, default}, _from, state)
+      when is_boolean(default) do
+    get_bool(state, name, default, OpenfeatureElixir.Context.new_targetless_context(%{}))
+  end
+
+  @impl true
+  def handle_call({:get_boolean_value, name, default, context}, _from, state)
+      when is_boolean(default) do
+    get_bool(state, name, default, context)
+  end
+
+  @impl true
+  def handle_call({:get_string_value, name, default}, _from, state) when is_binary(default) do
     case Map.get(state, :provider) do
       {provider, _, pid} ->
-        {:reply, provider.get_boolean_value(pid, name, default), state}
+        {:reply, provider.get_string_value(pid, name, default), state}
 
       _ ->
         {:reply, default, state}

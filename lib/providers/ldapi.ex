@@ -48,7 +48,8 @@ defmodule OpenfeatureElixir.Providers.LaunchdarklyProvider.LDApi do
   end
 
   @impl true
-  def handle_call({:get, key, fallback}, _from, state) do
-    {:reply, :ldclient.variation(key, :ldclient_context.new(""), fallback), state}
+  def handle_call({:get, key, fallback, context}, _from, state) do
+    IO.puts(inspect(context))
+    {:reply, :ldclient.variation(key, context, fallback), state}
   end
 end

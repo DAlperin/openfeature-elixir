@@ -22,8 +22,23 @@ defmodule OpenfeatureElixir.Providers.LaunchdarklyProvider do
     GenServer.start_link(LaunchdarklyProvider.LDApi, opts)
   end
 
-  def get_boolean_value(pid, name, default) do
-    GenServer.call(pid, {:get, name, default})
+  def get_boolean_value(pid, name, default, context) when is_boolean(default) do
+    GenServer.call(pid, {:get, name, default, ld_context_from_context(context)})
+  end
+
+  def get_string_value(pid, name, default, context) when is_binary(default) do
+    GenServer.call(pid, {:get, name, default, ld_context_from_context(context)})
+  end
+
+  def ld_context_from_context(%OpenfeatureElixir.Context{} = context) do
+    :ldclient_context.new_from_map(
+      Map.merge(
+        %{
+          :key => context.key
+        },
+        context.body
+      )
+    )
   end
 
   def terminate(pid) do

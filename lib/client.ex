@@ -7,9 +7,23 @@ defmodule OpenfeatureElixir.Client do
   end
 
   def new(name) do
-    {:ok, pid} = ClientGenServer.start_link(%OpenfeatureElixir.Config{name: name})
+    case ClientGenServer.start_link(%OpenfeatureElixir.Config{name: name}) do
+      {:ok, pid} ->
+        GenServer.cast(
+          OpenfeatureElixir.OpenfeatureManager,
+          {:register_client, name || :default, pid}
+        )
 
-    %OpenfeatureElixir.Client{pid: pid}
+        %OpenfeatureElixir.Client{pid: pid}
+
+      {:error, {:already_started, pid}} ->
+        GenServer.cast(
+          OpenfeatureElixir.OpenfeatureManager,
+          {:register_client, name || :default, pid}
+        )
+
+        %OpenfeatureElixir.Client{pid: pid}
+    end
   end
 
   def set_provider(%OpenfeatureElixir.Client{} = client, provider, args) do

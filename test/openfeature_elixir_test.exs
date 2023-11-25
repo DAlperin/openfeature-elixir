@@ -17,12 +17,21 @@ defmodule OpenfeatureElixirTest do
       ldProviderConfig
     )
 
+    globalContext =
+      OpenfeatureElixir.Context.new_targeted_context("user-dov", %{
+        kind: "user-other",
+        name: "Dov"
+      })
+
+    OpenfeatureElixir.set_global_context(globalContext)
+
     # Create a client using the default provider
     client = OpenfeatureElixir.Client.new()
 
-    assert OpenfeatureElixir.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
+    # This other client points to the same underlying genserver since a name isn't used
+    other = OpenfeatureElixir.Client.new()
 
-    OpenfeatureElixir.Client.shutdown(client)
+    assert OpenfeatureElixir.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
 
     OpenfeatureElixir.shutdown()
   end
