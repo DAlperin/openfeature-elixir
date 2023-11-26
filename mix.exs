@@ -1,4 +1,4 @@
-defmodule OpenfeatureElixir.MixProject do
+defmodule OpenFeature.MixProject do
   use Mix.Project
 
   def project do

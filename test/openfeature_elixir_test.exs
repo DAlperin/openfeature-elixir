@@ -1,38 +1,36 @@
-defmodule OpenfeatureElixirTest do
+defmodule OpenFeatureTest do
   use ExUnit.Case
-  doctest OpenfeatureElixir
+  doctest OpenFeature
 
   test "launchdarkly provider" do
-    {:ok, pid} = OpenfeatureElixir.init()
+    {:ok, pid} = OpenFeature.init()
 
     # Configure the provider
     ldProviderConfig =
-      OpenfeatureElixir.Providers.LaunchdarklyProvider.new()
-      |> OpenfeatureElixir.Providers.LaunchdarklyProvider.set_sdk_key(
-        System.get_env("LD_SDK_KEY")
-      )
+      OpenFeature.Providers.LaunchdarklyProvider.new()
+      |> OpenFeature.Providers.LaunchdarklyProvider.set_sdk_key(System.get_env("LD_SDK_KEY"))
 
-    OpenfeatureElixir.set_provider(
-      OpenfeatureElixir.Providers.LaunchdarklyProvider,
+    OpenFeature.set_provider(
+      OpenFeature.Providers.LaunchdarklyProvider,
       ldProviderConfig
     )
 
     globalContext =
-      OpenfeatureElixir.Context.new_targeted_context("user-dov", %{
+      OpenFeature.Context.new_targeted_context("user-dov", %{
         kind: "user-other",
         name: "Dov"
       })
 
-    OpenfeatureElixir.set_global_context(globalContext)
+    OpenFeature.set_global_context(globalContext)
 
     # Create a client using the default provider
-    client = OpenfeatureElixir.Client.new()
+    client = OpenFeature.Client.new()
 
     # This other client points to the same underlying genserver since a name isn't used
-    other = OpenfeatureElixir.Client.new()
+    other = OpenFeature.Client.new()
 
-    assert OpenfeatureElixir.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
+    assert OpenFeature.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
 
-    OpenfeatureElixir.shutdown()
+    OpenFeature.shutdown()
   end
 end

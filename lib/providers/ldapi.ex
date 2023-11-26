@@ -1,5 +1,5 @@
-defmodule OpenfeatureElixir.Providers.LaunchdarklyProvider.LDApi do
-  alias OpenfeatureElixir.Providers.LaunchdarklyProvider
+defmodule OpenFeature.Providers.LaunchdarklyProvider.LDApi do
+  alias OpenFeature.Providers.LaunchdarklyProvider
   use GenServer
 
   def wait_for_initalized() do

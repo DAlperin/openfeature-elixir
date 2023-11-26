@@ -1,9 +1,9 @@
-defmodule OpenfeatureElixir.Providers.LaunchdarklyProvider do
-  alias OpenfeatureElixir.Providers.LaunchdarklyProvider
+defmodule OpenFeature.Providers.LaunchdarklyProvider do
+  alias OpenFeature.Providers.LaunchdarklyProvider
   defstruct [:name, :sdk_key]
 
   def new() do
-    %OpenfeatureElixir.Providers.LaunchdarklyProvider{}
+    %OpenFeature.Providers.LaunchdarklyProvider{}
   end
 
   def set_name(%LaunchdarklyProvider{} = opts, name) do
@@ -30,7 +30,7 @@ defmodule OpenfeatureElixir.Providers.LaunchdarklyProvider do
     GenServer.call(pid, {:get, name, default, ld_context_from_context(context)})
   end
 
-  def ld_context_from_context(%OpenfeatureElixir.Context{} = context) do
+  def ld_context_from_context(%OpenFeature.Context{} = context) do
     :ldclient_context.new_from_map(
       Map.merge(
         %{

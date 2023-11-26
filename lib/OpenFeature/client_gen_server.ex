@@ -1,6 +1,6 @@
-defmodule OpenfeatureElixir.ClientGenServer do
+defmodule OpenFeature.ClientGenServer do
   use GenServer
-  alias OpenfeatureElixir.{Config}
+  alias OpenFeature.{Config}
 
   def start_link(%Config{name: nil} = opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -23,20 +23,20 @@ defmodule OpenfeatureElixir.ClientGenServer do
     {:ok, %{}}
   end
 
-  def rollup_context(%OpenfeatureElixir.Config{global_context: nil, local_context: nil}) do
-    OpenfeatureElixir.Context.new_targetless_context(%{})
+  def rollup_context(%OpenFeature.Config{global_context: nil, local_context: nil}) do
+    OpenFeature.Context.new_targetless_context(%{})
   end
 
-  def rollup_context(%OpenfeatureElixir.Config{global_context: nil, local_context: _}) do
-    OpenfeatureElixir.Context.new_targetless_context(%{})
+  def rollup_context(%OpenFeature.Config{global_context: nil, local_context: _}) do
+    OpenFeature.Context.new_targetless_context(%{})
   end
 
-  def rollup_context(%OpenfeatureElixir.Config{global_context: _, local_context: nil}) do
-    OpenfeatureElixir.Context.new_targetless_context(%{})
+  def rollup_context(%OpenFeature.Config{global_context: _, local_context: nil}) do
+    OpenFeature.Context.new_targetless_context(%{})
   end
 
   def rollup_context(nil, nil) do
-    OpenfeatureElixir.Context.new_targetless_context(%{})
+    OpenFeature.Context.new_targetless_context(%{})
   end
 
   def rollup_context(nil, second) do
@@ -47,11 +47,11 @@ defmodule OpenfeatureElixir.ClientGenServer do
     first
   end
 
-  def rollup_context(%OpenfeatureElixir.Context{} = first, %OpenfeatureElixir.Context{} = second) do
+  def rollup_context(%OpenFeature.Context{} = first, %OpenFeature.Context{} = second) do
     if is_nil(first.key) && is_nil(second.key) do
-      OpenfeatureElixir.Context.new_targetless_context(Map.merge(first.body, second.body))
+      OpenFeature.Context.new_targetless_context(Map.merge(first.body, second.body))
     else
-      OpenfeatureElixir.Context.new_targeted_context(
+      OpenFeature.Context.new_targeted_context(
         first.key || second.key,
         Map.merge(first.body, second.body)
       )
@@ -83,9 +83,9 @@ defmodule OpenfeatureElixir.ClientGenServer do
   end
 
   def rollup_context(
-        %OpenfeatureElixir.Context{} = first,
-        %OpenfeatureElixir.Context{} = second,
-        %OpenfeatureElixir.Context{} = third
+        %OpenFeature.Context{} = first,
+        %OpenFeature.Context{} = second,
+        %OpenFeature.Context{} = third
       ) do
     rollup_context(first, second) |> rollup_context(third)
   end
@@ -104,11 +104,9 @@ defmodule OpenfeatureElixir.ClientGenServer do
 
   @impl true
   def init(%Config{} = args) do
-    {:ok, provider} =
-      GenServer.call(OpenfeatureElixir.OpenfeatureManager, {:get_default_provider})
+    {:ok, provider} = GenServer.call(OpenFeature.OpenfeatureManager, {:get_default_provider})
 
-    {:ok, global_context} =
-      GenServer.call(OpenfeatureElixir.OpenfeatureManager, {:get_global_context})
+    {:ok, global_context} = GenServer.call(OpenFeature.OpenfeatureManager, {:get_global_context})
 
     args =
       Map.merge(args, %{
@@ -130,7 +128,7 @@ defmodule OpenfeatureElixir.ClientGenServer do
   @impl true
   def handle_call({:get_boolean_value, name, default}, _from, state)
       when is_boolean(default) do
-    get_bool(state, name, default, OpenfeatureElixir.Context.new_targetless_context(%{}))
+    get_bool(state, name, default, OpenFeature.Context.new_targetless_context(%{}))
   end
 
   @impl true

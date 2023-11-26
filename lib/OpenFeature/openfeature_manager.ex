@@ -1,4 +1,4 @@
-defmodule OpenfeatureElixir.OpenfeatureManager do
+defmodule OpenFeature.OpenfeatureManager do
   use GenServer
 
   def start_link() do
@@ -24,7 +24,7 @@ defmodule OpenfeatureElixir.OpenfeatureManager do
   end
 
   @impl true
-  def handle_call({:set_global_context, %OpenfeatureElixir.Context{} = context}, _from, state) do
+  def handle_call({:set_global_context, %OpenFeature.Context{} = context}, _from, state) do
     {:reply, :ok, Map.put(state, :global_context, context)}
   end
 
