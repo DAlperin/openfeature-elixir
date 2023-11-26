@@ -3,7 +3,7 @@ defmodule OpenFeatureTest do
   doctest OpenFeature
 
   test "launchdarkly provider" do
-    {:ok, pid} = OpenFeature.init()
+    OpenFeature.init()
 
     # Configure the provider
     ldProviderConfig =
@@ -27,10 +27,8 @@ defmodule OpenFeatureTest do
     client = OpenFeature.Client.new()
 
     # This other client points to the same underlying genserver since a name isn't used
-    other = OpenFeature.Client.new()
+    _other = OpenFeature.Client.new()
 
     assert OpenFeature.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
-
-    OpenFeature.shutdown()
   end
 end

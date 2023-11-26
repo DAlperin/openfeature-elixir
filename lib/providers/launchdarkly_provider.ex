@@ -10,7 +10,7 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider do
     Map.put(opts, :name, name)
   end
 
-  def set_sdk_key(%LaunchdarklyProvider{} = opts, sdk_key) do
+  def set_sdk_key(%LaunchdarklyProvider{} = opts, sdk_key) when is_binary(sdk_key) do
     Map.put(opts, :sdk_key, sdk_key)
   end
 

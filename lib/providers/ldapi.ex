@@ -2,6 +2,10 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider.LDApi do
   alias OpenFeature.Providers.LaunchdarklyProvider
   use GenServer
 
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts)
+  end
+
   def wait_for_initalized() do
     case :ldclient.initialized(:default) do
       true ->
@@ -49,7 +53,6 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider.LDApi do
 
   @impl true
   def handle_call({:get, key, fallback, context}, _from, state) do
-    IO.puts(inspect(context))
     {:reply, :ldclient.variation(key, context, fallback), state}
   end
 end

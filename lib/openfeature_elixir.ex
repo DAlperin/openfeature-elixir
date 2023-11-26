@@ -4,18 +4,32 @@ defmodule OpenFeature do
   """
 
   def init() do
-    OpenFeature.OpenfeatureManager.start_link()
+    cond do
+      :ets.whereis(:openfeature) != :undefined ->
+        IO.puts("OpenFeature already initialized")
+        nil
+
+      true ->
+        :ets.new(:openfeature, [:named_table, read_concurrency: true])
+    end
   end
 
   def set_provider(provider, args) do
-    GenServer.call(OpenFeature.OpenfeatureManager, {:set_default_provider, provider, args})
+    {:ok, pid} = provider.init(args)
+    :ets.insert(:openfeature, {"default_provider", {provider, args, pid}})
   end
 
-  def shutdown() do
-    GenServer.stop(OpenFeature.OpenfeatureManager)
+  def get_provider() do
+    [{_, provider}] = :ets.lookup(:openfeature, "default_provider")
+    provider
   end
 
   def set_global_context(context) do
-    GenServer.call(OpenFeature.OpenfeatureManager, {:set_global_context, context})
+    :ets.insert(:openfeature, {"global_context", context})
+  end
+
+  def get_global_context() do
+    [{_, context}] = :ets.lookup(:openfeature, "global_context")
+    context
   end
 end
