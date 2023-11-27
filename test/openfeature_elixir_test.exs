@@ -3,8 +3,6 @@ defmodule OpenFeatureTest do
   doctest OpenFeature
 
   test "launchdarkly provider" do
-    OpenFeature.init()
-
     # Configure the provider
     ldProviderConfig =
       OpenFeature.Providers.LaunchdarklyProvider.new()
@@ -26,7 +24,7 @@ defmodule OpenFeatureTest do
     # Create a client using the default provider
     client = OpenFeature.Client.new()
 
-    # This other client points to the same underlying genserver since a name isn't used
+    # This other client points to the same underlying ets tables since a name isn't used
     _other = OpenFeature.Client.new()
 
     assert OpenFeature.Client.get_boolean_value(client, "test-flag-for-demo", false) == true
