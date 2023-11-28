@@ -6,17 +6,13 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider.LDApi do
     GenServer.start_link(__MODULE__, opts)
   end
 
-  def wait_for_initialized() do
-    wait_for_initialized(5000, :default)
-  end
-
   def wait_for_initialized(timeout, tag) do
     wait_for_initialized(tag, System.os_time(:millisecond), false, timeout)
   end
 
   def wait_for_initialized(tag, started_at, false, timeout) do
     elapsed = System.os_time(:millisecond) - started_at
-    inited = :ldclient.initialized(:default)
+    inited = :ldclient.initialized(tag)
     wait_for_initialized(tag, started_at, inited || elapsed > timeout, timeout)
   end
 
@@ -36,7 +32,7 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider.LDApi do
       }
     )
 
-    wait_for_initialized()
+    wait_for_initialized(5000, :default)
 
     {:ok, %{}}
   end
@@ -53,7 +49,7 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider.LDApi do
       }
     )
 
-    wait_for_initialized()
+    wait_for_initialized(5000, name)
 
     {:ok, %{}}
   end
