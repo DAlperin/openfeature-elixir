@@ -1,11 +1,32 @@
 # OpenfeatureElixir
 
-**TODO: Add description**
+[OpenFeature is an open specification that provides a vendor-agnostic, community-driven API for feature flagging that works with your favorite feature flag management tool.](https://openfeature.dev)
+
+```elixir
+  ldProviderConfig =
+    OpenFeature.Providers.LaunchdarklyProvider.new()
+    |> OpenFeature.Providers.LaunchdarklyProvider.set_sdk_key(System.get_env("LD_SDK_KEY"))
+
+  OpenFeature.set_provider(
+    OpenFeature.Providers.LaunchdarklyProvider,
+    ldProviderConfig
+  )
+
+  globalContext =
+    OpenFeature.Context.new_targeted_context("user-dov", %{
+      kind: "user-other",
+      name: "Dov"
+    })
+
+  OpenFeature.set_global_context(globalContext)
+
+  # Create a client using the default provider
+  client = OpenFeature.Client.new()
+
+  value = OpenFeature.Client.get_boolean_value(client, "test-flag-for-demo", false
+```
 
 ## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `openfeature_elixir` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -15,7 +36,4 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/openfeature_elixir>.
-
+The docs can be found at <https://hexdocs.pm/openfeature_elixir>.

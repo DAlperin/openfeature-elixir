@@ -7,7 +7,22 @@ defmodule OpenFeature.MixProject do
       version: "0.1.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: package(),
+      docs: [
+        main: "OpenFeature",
+        extras: ["README.md"]
+      ],
+      description:
+        "OpenFeature is an open specification that provides a vendor-agnostic, community-driven API for feature flagging that works with your favorite feature flag management tool."
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/DAlperin/openfeature-elixir"},
+      maintainers: ["Dov Alperin"]
     ]
   end
 
