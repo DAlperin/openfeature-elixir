@@ -22,7 +22,8 @@ defmodule OpenFeature.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ldclient, "~> 3.0.0", hex: :launchdarkly_server_sdk},
+      {:ldclient, "~> 3.0.4", hex: :launchdarkly_server_sdk},
+      {:elixir_uuid, "~> 1.2"},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false}
 
       # {:dep_from_hexpm, "~> 0.3.0"},

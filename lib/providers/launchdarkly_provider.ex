@@ -1,4 +1,7 @@
 defmodule OpenFeature.Providers.LaunchdarklyProvider do
+  @moduledoc """
+  A provider for Launchdarkly.
+  """
   @behaviour OpenFeature.Provider
   alias OpenFeature.Providers.LaunchdarklyProvider
   defstruct [:name, :sdk_key]
@@ -12,8 +15,11 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider do
   #   }
   # end
 
-  def new() do
-    %OpenFeature.Providers.LaunchdarklyProvider{}
+  def new(sdk_key) do
+    %OpenFeature.Providers.LaunchdarklyProvider{
+      name: String.to_atom(UUID.uuid4()),
+      sdk_key: sdk_key
+    }
   end
 
   def set_name(%LaunchdarklyProvider{} = opts, name) do
@@ -38,32 +44,26 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider do
     :ok
   end
 
-  def init(%LaunchdarklyProvider{sdk_key: sdk_key}) do
-    :ldclient.start_instance(
-      String.to_charlist(sdk_key),
-      :default,
-      %{
-        :http_options => %{
-          :tls_options => :ldclient_config.tls_basic_options()
-        }
-      }
-    )
-
-    wait_for_initialized(5000, :default)
-
-    {:ok}
+  def init(%LaunchdarklyProvider{sdk_key: sdk_key, name: nil}) do
+    init(%LaunchdarklyProvider{sdk_key: sdk_key, name: :default})
   end
 
   def init(%LaunchdarklyProvider{sdk_key: sdk_key, name: name}) do
-    :ldclient.start_instance(
-      String.to_charlist(sdk_key),
-      name,
-      %{
-        :http_options => %{
-          :tls_options => :ldclient_config.tls_basic_options()
-        }
-      }
-    )
+    case :ldclient.start_instance(
+           String.to_charlist(sdk_key),
+           name,
+           %{
+             :http_options => %{
+               :tls_options => :ldclient_config.tls_basic_options()
+             }
+           }
+         ) do
+      :ok ->
+        :ok
+
+      {:error, :already_started, _} ->
+        :ok
+    end
 
     wait_for_initialized(5000, name)
 
