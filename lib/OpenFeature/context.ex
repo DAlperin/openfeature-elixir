@@ -1,4 +1,7 @@
 defmodule OpenFeature.Context do
+  @moduledoc """
+  A struct that represents the context of a feature flag evaluation.
+  """
   defstruct [:body, key: ""]
 
   def new_targetless_context(body) do

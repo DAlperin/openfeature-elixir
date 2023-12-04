@@ -1,9 +1,12 @@
 defmodule OpenFeature.Store do
+  @moduledoc """
+  The OpenFeature.Store is a GenServer that holds the current provider and global context.
+  """
   use GenServer
 
   @table_name :openfeature
 
-  def worker_spec() do
+  def child_spec() do
     %{
       id: __MODULE__,
       start: {__MODULE__, :start_link, []},
@@ -35,8 +38,13 @@ defmodule OpenFeature.Store do
   end
 
   def get_provider() do
-    [{_, provider}] = :ets.lookup(@table_name, "default_provider")
-    provider
+    case :ets.lookup(@table_name, "default_provider") do
+      [{_, {provider, args}}] ->
+        {provider, args}
+
+      _ ->
+        nil
+    end
   end
 
   def set_global_context(context) do
@@ -44,14 +52,19 @@ defmodule OpenFeature.Store do
   end
 
   def get_global_context() do
-    [{_, context}] = :ets.lookup(@table_name, "global_context")
-    context
+    case :ets.lookup(@table_name, "global_context") do
+      [{_, context}] ->
+        context
+
+      _ ->
+        nil
+    end
   end
 
   @impl true
   def handle_call({:set_provider, provider, args}, _from, state) do
-    {:ok, pid} = provider.init(args)
-    :ets.insert(@table_name, {"default_provider", {provider, args, pid}})
+    {:ok} = provider.init(args)
+    :ets.insert(@table_name, {"default_provider", {provider, args}})
     {:reply, :ok, state}
   end
 

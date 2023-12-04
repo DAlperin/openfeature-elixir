@@ -1,4 +1,7 @@
 defmodule OpenFeature.Supervisor do
+  @moduledoc """
+  The top-level supervisor for OpenFeature.
+  """
   use Supervisor
 
   def start_link(init_arg) do
@@ -6,13 +9,13 @@ defmodule OpenFeature.Supervisor do
   end
 
   @impl true
-  def init(_init_arg) do
+  def init(_) do
     Supervisor.init(children(), strategy: :one_for_one)
   end
 
   defp children do
     [
-      OpenFeature.Store.worker_spec()
+      OpenFeature.Store.child_spec()
     ]
   end
 end

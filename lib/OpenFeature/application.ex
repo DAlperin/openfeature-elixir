@@ -1,4 +1,7 @@
 defmodule OpenFeature.Application do
+  @moduledoc """
+  The top-level application for OpenFeature.
+  """
   use Application
 
   def start(_type, _args) do

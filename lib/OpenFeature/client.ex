@@ -1,4 +1,7 @@
 defmodule OpenFeature.Client do
+  @moduledoc """
+  Client for OpenFeature.
+  """
   alias OpenFeature.{Context}
   defstruct [:name, :pid, :local_context]
 
@@ -21,34 +24,35 @@ defmodule OpenFeature.Client do
     }
   end
 
-  def get_provider(%OpenFeature.Client{name: client_name}) do
+  defp get_client_name(%OpenFeature.Client{name: name}) do
+    name || __MODULE__
+  end
+
+  def get_provider(%OpenFeature.Client{} = client) do
     # Check if we have a provider already
-    case :ets.lookup(client_name || __MODULE__, "provider") do
-      [{_, {provider, _, pid}}] ->
-        {provider, pid}
+    case :ets.lookup(get_client_name(client), "provider") do
+      [{_, {provider, args}}] ->
+        {provider, args}
 
       # Check if we have a default provider
-      [] ->
+      _ ->
         case OpenFeature.get_provider() do
-          {provider, _, pid} ->
-            {provider, pid}
+          {provider, args} ->
+            {provider, args}
 
           _ ->
             nil
         end
-
-      _ ->
-        nil
     end
   end
 
   defp get_bool(%OpenFeature.Client{} = client, name, default, context) do
     case get_provider(client) do
-      {provider, pid} ->
+      {provider, args} ->
         context =
           Context.rollup_context(OpenFeature.get_global_context(), get_context(client), context)
 
-        provider.get_boolean_value(pid, name, default, context)
+        provider.get_boolean_value(args, name, default, context)
 
       _ ->
         default
@@ -57,11 +61,11 @@ defmodule OpenFeature.Client do
 
   defp get_string(%OpenFeature.Client{} = client, name, default, context) do
     case get_provider(client) do
-      {provider, pid} ->
+      {provider, args} ->
         context =
           Context.rollup_context(OpenFeature.get_global_context(), get_context(client), context)
 
-        provider.get_string_value(pid, name, default, context)
+        provider.get_string_value(args, name, default, context)
 
       _ ->
         default
@@ -69,12 +73,12 @@ defmodule OpenFeature.Client do
   end
 
   def set_context(%OpenFeature.Client{} = client, context) do
-    :ets.insert(client.name || __MODULE__, {"local_context", context})
+    :ets.insert(get_client_name(client), {"local_context", context})
     client
   end
 
   def get_context(%OpenFeature.Client{} = client) do
-    case :ets.lookup(client.name || __MODULE__, "local_context") do
+    case :ets.lookup(get_client_name(client), "local_context") do
       [{_, context}] ->
         context
 
@@ -84,8 +88,8 @@ defmodule OpenFeature.Client do
   end
 
   def set_provider(%OpenFeature.Client{} = client, provider, args) do
-    {:ok, pid} = provider.init(args)
-    :ets.insert(client.name || __MODULE__, {"provider", {provider, args, pid}})
+    {:ok} = provider.init(args)
+    :ets.insert(get_client_name(client), {"provider", {provider, args}})
     client
   end
 
