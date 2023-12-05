@@ -72,6 +72,19 @@ defmodule OpenFeature.Client do
     end
   end
 
+  defp get_number(%OpenFeature.Client{} = client, name, default, context) do
+    case get_provider(client) do
+      {provider, args} ->
+        context =
+          Context.rollup_context(OpenFeature.get_global_context(), get_context(client), context)
+
+        provider.get_number_value(args, name, default, context)
+
+      _ ->
+        default
+    end
+  end
+
   def set_context(%OpenFeature.Client{} = client, context) do
     :ets.insert(get_client_name(client), {"local_context", context})
     client
@@ -121,5 +134,20 @@ defmodule OpenFeature.Client do
       )
       when is_binary(default) do
     get_string(client, name, default, context)
+  end
+
+  def get_number_value(%OpenFeature.Client{} = client, name, default)
+      when is_number(default) do
+    get_number(client, name, default, Context.new_targetless_context(%{}))
+  end
+
+  def get_number_value(
+        %OpenFeature.Client{} = client,
+        name,
+        default,
+        %OpenFeature.Context{} = context
+      )
+      when is_number(default) do
+    get_number(client, name, default, context)
   end
 end

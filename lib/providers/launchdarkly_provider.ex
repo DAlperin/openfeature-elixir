@@ -90,6 +90,16 @@ defmodule OpenFeature.Providers.LaunchdarklyProvider do
     get(opts.name || :default, name, default, ld_context_from_context(context))
   end
 
+  def get_number_value(
+        %OpenFeature.Providers.LaunchdarklyProvider{} = opts,
+        name,
+        default,
+        context
+      )
+      when is_number(default) do
+    get(opts.name || :default, name, default, ld_context_from_context(context))
+  end
+
   defp get(pname, key, fallback, context) do
     :ldclient.variation(key, context, fallback, pname)
   end

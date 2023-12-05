@@ -16,5 +16,12 @@ defmodule OpenFeature.Provider do
               context :: %OpenFeature.Context{}
             ) :: binary()
 
+  @callback get_number_value(
+              tag :: term,
+              name :: term,
+              default :: number(),
+              context :: %OpenFeature.Context{}
+            ) :: number()
+
   # @optional_callbacks child_spec: 0
 end
